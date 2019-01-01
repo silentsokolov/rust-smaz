@@ -1,0 +1,15 @@
+[package]
+name = "smaz"
+version = "0.1.0"
+authors = ["Dmitriy Sokolov <silentsokolov@gmail.com>"]
+edition = "2018"
+homepage = "https://github.com/silentsokolov/rust-smaz"
+repository = "https://github.com/silentsokolov/rust-smaz"
+description = "Smaz is a simple compression library suitable for compressing very short
+strings."
+readme = "README.md"
+keywords = ["compression", "string", "smaz"]
+categories = ["compression"]
+license = "MIT"
+
+[dependencies]

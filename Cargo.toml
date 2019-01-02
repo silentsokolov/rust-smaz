@@ -11,5 +11,8 @@ keywords = ["compression", "string", "smaz"]
 categories = ["compression"]
 license = "MIT"
 
+[badges]
+travis-ci = { repository = "silentsokolov/rust-smaz" }
+
 [dependencies]
 lazy_static = "1.*"

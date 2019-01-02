@@ -1,3 +1,58 @@
+//! This crate implements the smaz algorithm for compressing very short strings.
+//!
+//! Smaz instead is not good for compressing general purpose data, but can compress
+//! text by 40-50% in the average case (works better with English), and is able to
+//! perform a bit of compression for HTML and urls as well. The important point is
+//! that Smaz is able to compress even strings of two or three bytes!
+//!
+//! See original [library by antirez](http://github.com/antirez/smaz) for information on smaz and the algorithm itself.
+//!
+//!
+//! # Quick Start
+//!
+//! ```
+//! extern crate smaz;
+//!
+//! use smaz::{compress,decompress};
+//!
+//! fn main() {
+//!     let s = "my long string";
+//!
+//!     let compressed = compress(&s.as_bytes());
+//!     println!("bytes: {:?}", &compressed);
+//!
+//!     let decompressed = decompress(&compressed);
+//!     if let Ok(v) = decompressed {
+//!         println!("bytes: {:?}", &v);
+//!     }
+//! }
+//! ```
+//!
+//!
+//! ## Compression examples
+//!
+//! - `This is a small string` compressed by 50%
+//! - `foobar` compressed by 34%
+//! - `the end` compressed by 58%
+//! - `not-a-g00d-Exampl333` *enlarged* by 15%
+//! - `Smaz is a simple compression library` compressed by 39%
+//! - `Nothing is more difficult, and therefore more precious, than to be able to decide` compressed by 49%
+//! - `this is an example of what works very well with smaz` compressed by 49%
+//! - `1000 numbers 2000 will 10 20 30 compress very little` compressed by 10%
+//! - `and now a few italian sentences:` compressed by 41%
+//! - `Nel mezzo del cammin di nostra vita, mi ritrovai in una selva oscura` compressed by 33%
+//! - `Mi illumino di immenso` compressed by 37%
+//! - `L'autore di questa libreria vive in Sicilia` compressed by 28%
+//! - `try it against urls` compressed by 37%
+//! - `http://google.com` compressed by 59%
+//! - `http://programming.reddit.com` compressed by 52%
+
+#![deny(
+    missing_copy_implementations,
+    missing_debug_implementations,
+    missing_docs
+)]
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -7,6 +62,7 @@ use std::fmt;
 use std::result;
 use std::str;
 
+/// Compression codebook, used for compression
 pub static CODEBOOK: [&str; 254] = [
     " ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ", "r", " th", " t", "in", "he",
     "th", "h", "he ", "to", "\r\n", "l", "s ", "d", " a", "an", "er", "c", " o", "d ", "on", " of",
@@ -38,7 +94,10 @@ lazy_static! {
     };
 }
 
-#[derive(Debug, Clone)]
+/// The error type for decompress operation.
+///
+/// Often this error occurs due to invalid data.
+#[derive(Debug, Clone, Copy)]
 pub struct DecompressError;
 
 impl fmt::Display for DecompressError {
@@ -53,6 +112,7 @@ impl Error for DecompressError {
     }
 }
 
+/// A specialized Result type for decompress operation.
 pub type Result<T> = result::Result<T, DecompressError>;
 
 fn flush_verbatim(verbatim: &[u8]) -> Vec<u8> {
@@ -69,8 +129,19 @@ fn flush_verbatim(verbatim: &[u8]) -> Vec<u8> {
     chunk
 }
 
+/// Returns compressed data as a vector of bytes.
+///
+/// # Examples
+///
+/// ```
+/// use smaz::compress;
+///
+/// let s = "string";
+/// let compressed = compress(&s.as_bytes());
+/// assert_eq!(vec![77, 114, 84], compressed);
+/// ```
 pub fn compress(input: &[u8]) -> Vec<u8> {
-    let mut out = Vec::with_capacity(input.len()/2);
+    let mut out: Vec<u8> = Vec::with_capacity(input.len() / 2);
     let mut verbatim: Vec<u8> = Vec::new();
     let mut input_index = 0;
 
@@ -81,7 +152,7 @@ pub fn compress(input: &[u8]) -> Vec<u8> {
             max_len = input.len() - input_index
         }
 
-        for i in (0..max_len + 1).rev() {
+        for i in (0..=max_len).rev() {
             let code = CODEBOOK_MAP.get(&input[input_index..input_index + i]);
             if let Some(v) = code {
                 if !verbatim.is_empty() {
@@ -112,8 +183,26 @@ pub fn compress(input: &[u8]) -> Vec<u8> {
     out
 }
 
+/// Returns decompressed data as a vector of bytes.
+///
+/// # Errors
+///
+/// If the compressed data is invalid or encoded incorrectly, then an error
+/// is returned [`DecompressError`](struct.DecompressError.html).
+///
+/// # Examples
+///
+/// ```
+/// use std::str;
+/// use smaz::decompress;
+///
+/// let v = vec![77, 114, 84];
+/// let decompressed = decompress(&v).unwrap();
+/// let origin = str::from_utf8(&decompressed).unwrap();
+/// assert_eq!("string", origin);
+/// ```
 pub fn decompress(input: &[u8]) -> Result<Vec<u8>> {
-    let mut out: Vec<u8> = Vec::with_capacity(input.len()*3);
+    let mut out: Vec<u8> = Vec::with_capacity(input.len() * 3);
     let mut i: usize = 0;
 
     while i < input.len() {
@@ -127,7 +216,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>> {
             if i + input[i + 1] as usize + 2 >= input.len() {
                 return Err(DecompressError);
             }
-            for j in 0..input[i + 1] + 1 {
+            for j in 0..=input[i + 1] {
                 out.push(input[i + 2 + j as usize])
             }
             i += 3 + input[i + 1] as usize
@@ -179,8 +268,8 @@ mod tests {
 
             if s.len() > 0 {
                 let level = 100i8 - ((100 * compressed.len()) / s.as_bytes().len()) as i8;
-                let word = if level > 0 {"compressed"} else {"enlarged"};
-                println!("{} {} by {}%", s, word, level.abs());
+                let word = if level > 0 { "compressed" } else { "enlarged" };
+                println!("\"{}\" {} by {}%", s, word, level.abs());
             }
         }
     }

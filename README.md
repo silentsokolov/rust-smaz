@@ -1,5 +1,9 @@
 # rust-smaz
 
+[![Build Status](https://travis-ci.org/silentsokolov/rust-smaz.svg?branch=master)](https://travis-ci.org/silentsokolov/rust-smaz)
+[![Crate](https://img.shields.io/crates/v/smaz.svg)](https://crates.io/crates/smaz)
+[![Docs](https://docs.rs/rand/badge.svg)](https://docs.rs/smaz)
+
 rust-smaz is a pure Rust implementation of smaz - algorithm for compressing very short strings. See original [C implementation smaz by antirez](http://github.com/antirez/smaz) for information on smaz and the algorithm itself.
 
 
@@ -12,22 +16,21 @@ Add this to your `Cargo.toml`:
 smaz = "0.1.0"
 ```
 
+## Quick start
 
-## F.A.Q.
+```rust
+extern crate smaz;
 
-- Why HashMap?
+use smaz::{compress,decompress};
 
-Benchmark match statement and HashMap:
+fn main() {
+    let s = "string";
 
-```
-$ cargo bench
+    let compressed = compress(&s.as_bytes());
+    println!("compress bytes: {:?}", &compressed);
 
-     Finished release [optimized] target(s) in 0.04s
-     Running target/release/deps/smaz-07673d33e2751e17
-
-running 2 tests
-test tests::lookup_bench ... bench:          22 ns/iter (+/- 7)
-test tests::map_bench    ... bench:          80 ns/iter (+/- 13)
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 2 measured; 0 filtered out
+    let decompressed = decompress(&compressed).unwrap();
+    let origin = str::from_utf8(&decompressed).unwrap();
+    assert_eq!(s, origin);
+}
 ```

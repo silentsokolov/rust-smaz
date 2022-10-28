@@ -1,6 +1,6 @@
 # rust-smaz
 
-[![Build Status](https://travis-ci.org/silentsokolov/rust-smaz.svg?branch=master)](https://travis-ci.org/silentsokolov/rust-smaz)
+[![build](https://github.com/silentsokolov/rust-smaz/actions/workflows/build.yml/badge.svg)](https://github.com/silentsokolov/rust-smaz/actions/workflows/build.yml)
 [![Crate](https://img.shields.io/crates/v/smaz.svg)](https://crates.io/crates/smaz)
 [![Docs](https://docs.rs/rand/badge.svg)](https://docs.rs/smaz)
 
@@ -26,7 +26,7 @@ use smaz::{compress,decompress};
 fn main() {
     let s = "string";
 
-    let compressed = compress(&s.as_bytes());
+    let compressed = compress(s.as_bytes());
     println!("compress bytes: {:?}", &compressed);
 
     let decompressed = decompress(&compressed).unwrap();

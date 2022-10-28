@@ -18,7 +18,7 @@
 //! fn main() {
 //!     let s = "my long string";
 //!
-//!     let compressed = compress(&s.as_bytes());
+//!     let compressed = compress(s.as_bytes());
 //!     println!("bytes: {:?}", &compressed);
 //!
 //!     let decompressed = decompress(&compressed);
@@ -137,7 +137,7 @@ fn flush_verbatim(verbatim: &[u8]) -> Vec<u8> {
 /// use smaz::compress;
 ///
 /// let s = "string";
-/// let compressed = compress(&s.as_bytes());
+/// let compressed = compress(s.as_bytes());
 /// assert_eq!(vec![77, 114, 84], compressed);
 /// ```
 pub fn compress(input: &[u8]) -> Vec<u8> {

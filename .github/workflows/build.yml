@@ -22,12 +22,12 @@ jobs:
           override: true
 
       - name: Run tests
-        uses: actions-rs/cargo@v2
+        uses: actions-rs/cargo@v1
         with:
           command: test
 
       - name: Build
-        uses: actions-rs/cargo@v2
+        uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release
@@ -42,3 +42,4 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./cobertura.xml

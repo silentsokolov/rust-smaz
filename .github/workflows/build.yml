@@ -1,0 +1,44 @@
+---
+name: "build"
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+    branches: main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Run tests
+        uses: actions-rs/cargo@v2
+        with:
+          command: test
+
+      - name: Build
+        uses: actions-rs/cargo@v2
+        with:
+          command: build
+          args: --release
+
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          version: '0.15.0'
+          args: '--workspace --out Xml -- --test-threads 1'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

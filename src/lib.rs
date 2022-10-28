@@ -159,7 +159,7 @@ pub fn compress(input: &[u8]) -> Vec<u8> {
                     out.append(&mut flush_verbatim(&verbatim));
                     verbatim.clear();
                 }
-                out.push(v.clone());
+                out.push(*v);
                 input_index += i;
                 encoded = true;
                 break;
@@ -222,7 +222,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>> {
             i += 3 + input[i + 1] as usize
         } else {
             for c in CODEBOOK[input[i] as usize].as_bytes().iter() {
-                out.push(c.clone());
+                out.push(*c);
             }
 
             i += 1;
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn test_compress() {
         for s in TEST_STRINGS.iter() {
-            let compressed = compress(&s.as_bytes());
+            let compressed = compress(s.as_bytes());
             let decompressed = decompress(&compressed);
 
             if let Ok(v) = decompressed {
@@ -266,7 +266,7 @@ mod tests {
                 panic!("Could not decompress string {}.", s);
             }
 
-            if s.len() > 0 {
+            if !s.is_empty() {
                 let level = 100i8 - ((100 * compressed.len()) / s.as_bytes().len()) as i8;
                 let word = if level > 0 { "compressed" } else { "enlarged" };
                 println!("\"{}\" {} by {}%", s, word, level.abs());

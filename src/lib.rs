@@ -212,7 +212,7 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>> {
             out.push(input[i + 1]);
             i += 2;
         } else if input[i] == 255 {
-            if i + 2 + input[i + 1] as usize > input.len() {
+            if i + 1 >= input.len() || i + 2 + input[i + 1] as usize >= input.len() {
                 return Err(DecompressError);
             }
             for j in 0..=input[i + 1] {

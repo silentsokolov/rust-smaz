@@ -212,13 +212,12 @@ pub fn decompress(input: &[u8]) -> Result<Vec<u8>> {
             out.push(input[i + 1]);
             i += 2;
         } else if input[i] == 255 {
-            if i + 2 + input[i + 1] as usize > input.len() {
+            if i + 1 >= input.len() || i + 2 + input[i + 1] as usize >= input.len() {
                 return Err(DecompressError);
             }
-            for j in 0..=input[i + 1] {
-                out.push(input[i + 2 + j as usize])
-            }
-            i += 3 + input[i + 1] as usize
+            let len = input[i + 1] as usize + 1;
+            out.extend_from_slice(&input[i + 2..i + 2 + len]);
+            i += 2 + len;
         } else {
             for c in CODEBOOK[input[i] as usize].as_bytes().iter() {
                 out.push(*c);

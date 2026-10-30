@@ -13,3 +13,8 @@ license = "MIT"
 
 [dependencies]
 lazy_static = "1.*"
+
+[dev-dependencies]
+# The original hash-map implementation, used to check that the trie-based
+# compressor produces identical output
+smaz_reference = { package = "smaz", version = "=0.1.0" }

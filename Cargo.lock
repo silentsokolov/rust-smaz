@@ -13,4 +13,14 @@ name = "smaz"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
+ "smaz 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "smaz"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f9ecc6775a24d971affc5b0e8549207ff53cf80eb661592165d67e0170a1fb0"
+dependencies = [
+ "lazy_static",
 ]
